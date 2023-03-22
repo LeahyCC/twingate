@@ -19,7 +19,8 @@ const ElementGenerator = (props: ElementGeneratorProps) => {
         </div>
       )
     case 'image-text':
-      const flexDirection = props.leftToRight ? 'row' : 'row-reverse'
+      const { leftToRight = true } = props
+      const flexDirection = leftToRight ? 'row' : 'row-reverse'
       return (
         <div css={[styles.ImageText, { flexDirection }]}>
           {props.imageURI && <img src={props.imageURI} alt="Image" />}
@@ -37,12 +38,22 @@ const ElementGenerator = (props: ElementGeneratorProps) => {
        * like a 'copy to clipboard' button.
        */
       useEffect(() => {
+        refreshData()
+      }, [props.url])
+
+      const refreshData = () => {
         fetch(props.url)
           .then((response) => response.json())
           .then((data) => setJsonData(JSON.stringify(data).slice(0, 100) + '...'))
-      }, [props.url])
+      }
 
-      return <pre css={styles.pre}>{jsonData}</pre>
+      return (
+        <div>
+          <pre css={styles.pre}>{jsonData}</pre>
+          <br />
+          <button onClick={refreshData}>refresh</button>
+        </div>
+      )
     default:
       return <div>Something went wrong, please check the JSON</div>
   }
