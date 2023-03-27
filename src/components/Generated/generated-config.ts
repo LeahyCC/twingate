@@ -1,16 +1,18 @@
-type heroElement = {
+export type heroElement = {
   type: 'hero'
   imageURI: string
 }
-type imageTextElement = {
+export type imageTextElement = {
   type: 'image-text'
   imageURI: string
   text: string
   title?: string
   leftToRight?: boolean
 }
-type dataElement = {
+export type dataElement = {
   type: 'data'
   url: string
 }
-export type jsonElement = heroElement | imageTextElement | dataElement
+
+export type Element = heroElement | imageTextElement | dataElement
+export type ElementTypes = 'hero' | 'image-text' | 'data'

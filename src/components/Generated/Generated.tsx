@@ -1,34 +1,40 @@
 import { useState } from 'react'
 import ElementGenerator from './ElementGenerator'
-import { jsonElement } from './generated-config'
+import { Element } from './generated-config'
 import * as styles from './Generated.styes'
 
+import { JsonState } from '../../App'
+
 type jsonInputProps = {
-  jsonInput: string
+  jsonState: JsonState
 }
 
-const Generated = ({ jsonInput }: jsonInputProps) => {
-  const parsedJson = JSON.parse(jsonInput)
+const Generated = ({ jsonState }: jsonInputProps) => {
   const [jsonData, setJsonData] = useState('')
 
   return (
     <div>
-      {/* Check if it's array of obj or a single obj */}
-      {parsedJson?.length > 0 ? (
-        parsedJson.map((element: jsonElement, index: string) => {
-          return (
-            <div css={styles.generatedContainer} key={`${element.type}-${index}`}>
-              <ElementGenerator {...element} jsonData={jsonData} setJsonData={setJsonData} />
-            </div>
-          )
-        })
-      ) : jsonInput ? (
-        <div css={styles.generatedContainer} key={`${parsedJson.type}`}>
-          <ElementGenerator {...parsedJson} jsonData={jsonData} setJsonData={setJsonData} />
-        </div>
-      ) : (
-        <div>Something when wrong, please check your JSON</div>
+      {!jsonState.isValid && (
+        <div>Invalid JSON could be typing or Invalid JSON || is empty input</div>
       )}
+      {jsonState.isValid &&
+        (jsonState.isArray ? (
+          JSON.parse(jsonState.json).map((element: Element, index: string) => {
+            return (
+              <div css={styles.generatedContainer} key={`${element.type}-${index}`}>
+                <ElementGenerator {...element} jsonData={jsonData} setJsonData={setJsonData} />
+              </div>
+            )
+          })
+        ) : (
+          <div css={styles.generatedContainer} key={`${JSON.parse(jsonState.json).type}`}>
+            <ElementGenerator
+              {...JSON.parse(jsonState.json)}
+              jsonData={jsonData}
+              setJsonData={setJsonData}
+            />
+          </div>
+        ))}
     </div>
   )
 }
