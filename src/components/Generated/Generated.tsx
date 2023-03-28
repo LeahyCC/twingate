@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import ElementGenerator from './ElementGenerator'
-import { Element } from './generated-config'
+import { ElementsProps } from './generated-config'
 import * as styles from './Generated.styes'
 
 import { JsonState } from '../../App'
@@ -10,8 +9,6 @@ type jsonInputProps = {
 }
 
 const Generated = ({ jsonState }: jsonInputProps) => {
-  const [jsonData, setJsonData] = useState('')
-
   return (
     <div>
       {!jsonState.isValid && (
@@ -19,20 +16,16 @@ const Generated = ({ jsonState }: jsonInputProps) => {
       )}
       {jsonState.isValid &&
         (jsonState.isArray ? (
-          JSON.parse(jsonState.json).map((element: Element, index: string) => {
+          JSON.parse(jsonState.json).map((element: ElementsProps, index: string) => {
             return (
               <div css={styles.generatedContainer} key={`${element.type}-${index}`}>
-                <ElementGenerator {...element} jsonData={jsonData} setJsonData={setJsonData} />
+                <ElementGenerator {...element} />
               </div>
             )
           })
         ) : (
           <div css={styles.generatedContainer} key={`${JSON.parse(jsonState.json).type}`}>
-            <ElementGenerator
-              {...JSON.parse(jsonState.json)}
-              jsonData={jsonData}
-              setJsonData={setJsonData}
-            />
+            <ElementGenerator {...JSON.parse(jsonState.json)} />
           </div>
         ))}
     </div>
