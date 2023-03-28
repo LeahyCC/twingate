@@ -13,12 +13,35 @@ const TextEditor = ({ jsonState, setJsonState }: TextEditorProps) => {
     try {
       JSON.parse(value)
       setJsonState((prev) => {
-        return { ...prev, isValid: true, json: value, isArray: Array.isArray(JSON.parse(value)) }
+        return {
+          ...prev,
+          isValid: true,
+          json: value,
+          isArray: Array.isArray(JSON.parse(value)),
+          error: null,
+        }
       })
-    } catch (e) {
-      setJsonState((prev) => {
-        return { ...prev, isValid: false, json: value }
-      })
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        const errorTyped: SyntaxError = error
+        setJsonState((prev) => {
+          return {
+            ...prev,
+            isValid: false,
+            json: value,
+            error: errorTyped.message,
+          }
+        })
+      } else {
+        setJsonState((prev) => {
+          return {
+            ...prev,
+            isValid: false,
+            json: value,
+            error: 'Invalid JSON',
+          }
+        })
+      }
     }
   }
 

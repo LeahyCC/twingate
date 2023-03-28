@@ -11,9 +11,7 @@ type jsonInputProps = {
 const Generated = ({ jsonState }: jsonInputProps) => {
   return (
     <div>
-      {!jsonState.isValid && (
-        <div>Invalid JSON could be typing or Invalid JSON || is empty input</div>
-      )}
+      {!jsonState.isValid && <pre>{jsonState.error}</pre>}
       {jsonState.isValid &&
         (jsonState.isArray ? (
           JSON.parse(jsonState.json).map((element: ElementsProps, index: string) => {
