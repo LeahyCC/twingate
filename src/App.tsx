@@ -41,7 +41,6 @@ const INITIAL_JSON = `[${DUMMY_JSON}]`
 // const INITIAL_JSON = `[]`
 
 export type JsonState = {
-  isValid: boolean
   isArray: boolean
   json: string
   error: string | null
@@ -49,7 +48,6 @@ export type JsonState = {
 
 function App() {
   const [jsonState, setJsonState] = useState<JsonState>({
-    isValid: true,
     isArray: true,
     json: INITIAL_JSON,
     error: null,
