@@ -1,4 +1,4 @@
-import { useEffect, useCallback, memo, useState } from 'react'
+import { useRef, useEffect, useCallback, memo, useState } from 'react'
 import {
   ElementTypes,
   ElementsProps,
@@ -39,9 +39,15 @@ const ImageText = memo(function ImageText({
 
 const DataElement = memo(function DataElement({ url }: DataElementProps & ElementsProps) {
   const [jsonData, setJsonData] = useState('')
+  let didInit = false
 
   useEffect(() => {
-    refreshData()
+    if (!didInit) {
+      didInit = true
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => setJsonData(JSON.stringify(data).slice(0, 100) + '...'))
+    }
   }, [])
 
   const refreshData = useCallback(() => {
