@@ -1,62 +1,86 @@
-import { useEffect } from 'react'
-import { jsonElement } from './generated-config'
+import { useEffect, useCallback, memo, useState } from 'react'
+import {
+  ElementTypes,
+  ElementsProps,
+  ElementGeneratorsProps,
+  HeroElementProps,
+  DataElementProps,
+  ImageTextElementProps,
+} from './generated-config'
 
 // note: ideally separate styles into their own file
 import * as styles from './Generated.styes'
 
-type ElementGeneratorProps = jsonElement & {
-  jsonData: string
-  setJsonData: (data: string) => void
+const Hero = memo(function Hero({ imageURI }: HeroElementProps) {
+  return (
+    <div css={styles.HeroImage}>
+      <img src={imageURI} alt="Hero Image" />
+    </div>
+  )
+})
+
+const ImageText = memo(function ImageText({
+  leftToRight = true,
+  imageURI,
+  title,
+  text,
+}: ImageTextElementProps) {
+  const flexDirection = leftToRight ? 'row' : 'row-reverse'
+  return (
+    <div css={[styles.ImageText, { flexDirection }]}>
+      {imageURI && <img src={imageURI} alt="Image" />}
+      <div>
+        {title && <h3>{title}</h3>}
+        <p>{text}</p>
+      </div>
+    </div>
+  )
+})
+
+const DataElement = memo(function DataElement({ url }: DataElementProps & ElementsProps) {
+  const [jsonData, setJsonData] = useState('')
+  let didInit = false
+
+  useEffect(() => {
+    if (!didInit) {
+      didInit = true
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => setJsonData(JSON.stringify(data).slice(0, 100) + '...'))
+    }
+  }, [])
+
+  const refreshData = useCallback(() => {
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => setJsonData(JSON.stringify(data).slice(0, 100) + '...'))
+  }, [url])
+
+  return (
+    <div>
+      <pre css={styles.pre}>{jsonData}</pre>
+      <br />
+      <button onClick={refreshData}>refresh</button>
+    </div>
+  )
+})
+
+const elementGenerators: Record<ElementTypes, ElementGeneratorsProps> = {
+  hero: (elementProps: ElementsProps) => <Hero {...(elementProps as HeroElementProps)} />,
+  'image-text': (elementProps: ElementsProps) => (
+    <ImageText {...(elementProps as ImageTextElementProps)} />
+  ),
+  data: (elementProps: ElementsProps) => <DataElement {...(elementProps as DataElementProps)} />,
 }
 
-const ElementGenerator = (props: ElementGeneratorProps) => {
-  const { jsonData, setJsonData } = props
-  switch (props.type) {
-    case 'hero':
-      return (
-        <div css={styles.HeroImage}>
-          <img src={props.imageURI} alt="Hero Image" />
-        </div>
-      )
-    case 'image-text':
-      const { leftToRight = true } = props
-      const flexDirection = leftToRight ? 'row' : 'row-reverse'
-      return (
-        <div css={[styles.ImageText, { flexDirection }]}>
-          {props.imageURI && <img src={props.imageURI} alt="Image" />}
-          <div>
-            {props.title && <h3>{props.title}</h3>}
-            <p>{props.text}</p>
-          </div>
-        </div>
-      )
-    case 'data':
-      /**
-       * Depending on AC, `.slice(0, 100) + '...')` could be removed.
-       * I'd allow the user to view the entire contents of the JSON
-       * with a 'view more' button or something similar
-       * like a 'copy to clipboard' button.
-       */
-      useEffect(() => {
-        refreshData()
-      }, [props.url])
+const ElementGenerator = (props: ElementsProps) => {
+  const ElementComponent = elementGenerators[props.type]
 
-      const refreshData = () => {
-        fetch(props.url)
-          .then((response) => response.json())
-          .then((data) => setJsonData(JSON.stringify(data).slice(0, 100) + '...'))
-      }
-
-      return (
-        <div>
-          <pre css={styles.pre}>{jsonData}</pre>
-          <br />
-          <button onClick={refreshData}>refresh</button>
-        </div>
-      )
-    default:
-      return <div>Something went wrong, please check the JSON</div>
+  if (!ElementComponent) {
+    return <div>Something went wrong with this element, please check the JSON</div>
   }
+
+  return <ElementComponent {...props} />
 }
 
-export default ElementGenerator
+export default memo(ElementGenerator)
